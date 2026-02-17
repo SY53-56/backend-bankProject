@@ -18,6 +18,23 @@ const jwt =require("jsonwebtoken")
     })
 }
 
+async function userLoginController(req,res) {
+      const {email ,password} = req.body
+      const user = await userModel.findOne({email})
+      if(!user) return res.status(404).json({message:"user not exists with this email"})
+    const isMatch = user.comparePassword(password)
+if(!isMatch){
+  return res.status(422).json({message:"user already exist eith email",status:"failed"})
+}
+const token = jwt.sign({userId:user._id }, process.env.JWT_SECRET,{expiresIn:"3d"})
+ res.cookie("token",token)
+    res.status(200).json({user:{_id:user._id , email:user.email,name:user.name},
+        token
+    })
+}
+
+
 module.exports={
-    userRegisterController
+    userRegisterController,
+    userLoginController
 }
